@@ -3,6 +3,7 @@ import { calculatePaginationData } from "../utils/calculatePaginationData.js";
 import { SORT_ORDER } from "../constans/index.js";
 import { parseIsFavourite } from "../utils/parseFilterParams.js";
 
+
 export const getAllContacts = async ( page=1, perPage=10, sortBy = 'name', sortOrder = SORT_ORDER.ASC, filter = {}, userId) => {
    const limit = perPage;
     const skip = (page - 1) * perPage;
