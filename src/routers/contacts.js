@@ -13,16 +13,16 @@ import { creaContactSchema, updateContactSchema } from '../validation/contacts.j
 
 const router = Router();
 
-router.get('/contacts', ctrlWrapper(getContactsController) );
+router.get('/contacts', ctrlWrapper(getContactsController));
 
 router.get('/contacts/:contactId', ctrlWrapper(getContactsByIdController));
 
-router.post('/contacts', ctrlWrapper(createContactController));
+router.post('/contacts', validateBody(creaContactSchema), ctrlWrapper(createContactController));
 
 router.delete('/contacts/:contactId', ctrlWrapper(deleteContactController));
 
-router.put('/contacts/:contactId',validateBody(creaContactSchema), ctrlWrapper(updateContactController));
+router.put('/contacts/:contactId', validateBody(creaContactSchema), ctrlWrapper(updateContactController));
 
 router.patch('/contacts/:contactId', validateBody(updateContactSchema), ctrlWrapper(patchContactController));
 
- export default router;
+export default router;

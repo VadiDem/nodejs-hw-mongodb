@@ -23,17 +23,11 @@ const contactsSchema = new Schema(
             type: String,
             enum: ['work', 'home', 'personal'],
             default: 'personal',
-            required: true
+            required: true,
         },
-        createdAt: {
-            type: Date,
-            default: Date.now
-        },
-        updatedAt: {
-            type: Date,
-            default: Date.now
-        },
-    }, {
+
+    },
+    {
     timestamps: true,
 }
 );
