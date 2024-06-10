@@ -15,7 +15,8 @@ export const getContactsController = async (req, res, next) => {
     res.json({
       status: 200,
       message: 'Successfully found contacts!',
-      data: contacts,
+      data: contacts.data, 
+      pagination: contacts.paginationData,
     });
   } catch (error) {
     next(error);
@@ -43,7 +44,11 @@ export const getContactsByIdController = async (req, res, next) => {
 
 export const createContactController = async (req, res, next) => {
   try {
-    const contact = await createContacts(req.body);
+    const { name, phoneNumber } = req.body;
+    if (!name || !phoneNumber) {
+      throw createHttpError(400, 'Name and phoneNumber are required');
+    }
+    const contact = await createContacts({ name, phoneNumber });
 
     res.status(201).json({
       status: 201,
@@ -86,7 +91,7 @@ export const updateContactController = async (req, res, next) => {
     res.status(status).json({
       status,
       message: `Successfully upserted a contact!`,
-      data: result.contact,
+      data: result,
     });
   } catch (error) {
     next(error);
@@ -105,7 +110,7 @@ export const patchContactController = async (req, res, next) => {
     res.json({
       status: 200,
       message: `Successfully patched a contact!`,
-      data: result.contact,
+      data: result,
     });
   } catch (error) {
     next(error);

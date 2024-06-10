@@ -1,4 +1,3 @@
-
 export const parseIsFavourite = (isFavourite) => {
   if (typeof isFavourite === 'boolean') {
     return isFavourite;
@@ -12,9 +11,14 @@ export const parseIsFavourite = (isFavourite) => {
   return undefined;
 };
 
-
 export const parseFilterParams = (query) => {
-    const { isFavourite } = query;
-    const parsedIsFavourite = parseIsFavourite(isFavourite);
-    return { isFavourite: parsedIsFavourite };
+  const { isFavourite } = query;
+  const parsedIsFavourite = parseIsFavourite(isFavourite);
+  const filter = {};
+
+  if (parsedIsFavourite !== undefined) {
+    filter.isFavourite = parsedIsFavourite;
+  }
+
+  return filter;
 };

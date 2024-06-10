@@ -16,7 +16,7 @@ export const getAllContacts = async (page = 1, perPage = 10, sortBy = 'name', so
     }
   }
 
-  const contactsCount = await ContactsCollection.countDocuments();
+  const contactsCount = await ContactsCollection.countDocuments(filter);
   const contacts = await contactsQuery.exec();
   const paginationData = calculatePaginationData(contactsCount, limit, page);
 
@@ -24,28 +24,5 @@ export const getAllContacts = async (page = 1, perPage = 10, sortBy = 'name', so
     data: contacts,
     ...paginationData,
   };
-};
-
-export const getContactsById = async (contactId) => {
-  const contact = await ContactsCollection.findById(contactId);
-  return contact;
-};
-
-export const createContacts = async (payload) => {
-  const contact = await ContactsCollection.create(payload);
-  return contact;
-};
-
-export const deleteContact = async (contactId) => {
-  const contact = await ContactsCollection.findOneAndDelete({ _id: contactId });
-  return contact;
-};
-
-export const updateContact = async (contactId, payload, options = {}) => {
-  const contact = await ContactsCollection.findByIdAndUpdate(contactId, payload, {
-    new: true,
-    ...options,
-  });
-  return contact;
 };
 
