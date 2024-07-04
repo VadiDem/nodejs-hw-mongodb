@@ -1,3 +1,4 @@
+
 export const parseIsFavourite = (isFavourite) => {
   if (typeof isFavourite === 'boolean') {
     return isFavourite;

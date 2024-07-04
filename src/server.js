@@ -7,6 +7,7 @@ import { errorHandler } from './middlewares/errorHandler.js';
 import { notFoundHandler } from './middlewares/notFoundHandler.js';
 import router from './routers/index.js';
 import { UPLOAD_DIR } from './constans/index.js';
+import { swaggerDocs } from './middlewares/swaggerDocs.js';
 
 const PORT = env.PORT || 3000;
 
@@ -20,6 +21,8 @@ export const setupServer = () => {
   }),
  );
 
+app.use('/uploads', express.static(UPLOAD_DIR));
+app.use('/api-docs', swaggerDocs());
 
   app.use(cors());
   app.use(cookieParser());

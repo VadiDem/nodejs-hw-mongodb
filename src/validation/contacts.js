@@ -13,6 +13,7 @@ export const creaContactSchema = Joi.object({
     contactType: Joi.string().min(3).max(20).valid('work', 'home', 'personal').required(),
     createdAt: Joi.date().iso().required(),
     updatedAt: Joi.date().iso().required(),
+    photo: Joi.string().optional(),
 });
 
 export const updateContactSchema = Joi.object({
@@ -23,4 +24,5 @@ export const updateContactSchema = Joi.object({
     contactType: Joi.string().min(3).max(20).valid('work', 'home', 'personal').required(),
     createdAt: Joi.date().iso().required(),
     updatedAt: Joi.date().iso().required(),
+    photo: Joi.string().optional(),
 });
