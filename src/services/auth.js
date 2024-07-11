@@ -14,12 +14,18 @@ import fs from 'node:fs/promises';
 import { TEMPLATES_DIR } from '../constans/index.js';
 
 export const registerUser = async (payload) => {
-    const encryptedPassword = await bcrypt.hash(payload.password, 10);
+  const existingUser = await UsersCollection.findOne({ email: payload.email });
 
-    return await UsersCollection.create({
-        ...payload,
-        password: encryptedPassword,
-    });
+  if (existingUser) {
+    throw createHttpError(409, 'User already exists');
+  }
+
+  const encryptedPassword = await bcrypt.hash(payload.password, 10);
+
+  return await UsersCollection.create({
+    ...payload,
+    password: encryptedPassword,
+  });
 };
 
 export const loginUser = async (payload) => {
@@ -120,13 +126,16 @@ export const requestResetToken = async (email) => {
     name: user.name,
     link: `${env('APP_DOMAIN')}/reset-password?token=${resetToken}`,
   });
-
+try {
   await sendEmail({
     from: env(SMTP.SMTP_FROM),
     to: email,
     subject: 'Reset your password',
     html,
   });
+} catch (err) {
+  throw createHttpError(500, 'Failed to send reset email');
+  }
 };
 
 export const resetPassword = async (payload) => {
