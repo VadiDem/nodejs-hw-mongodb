@@ -133,6 +133,7 @@ try {
     subject: 'Reset your password',
     html,
   });
+// eslint-disable-next-line no-unused-vars
 } catch (err) {
   throw createHttpError(500, 'Failed to send reset email');
   }
