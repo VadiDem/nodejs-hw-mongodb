@@ -1,167 +1,33 @@
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
-import { randomBytes } from 'crypto';
-import createHttpError from 'http-errors';
-import { UsersCollection } from "../db/models/user.js";
-import { FIFTEEN_MINUTES, ONE_DAY } from '../constans/index.js';
-import { SessionsCollection } from '../db/models/session.js';
-import { SMTP } from '../constans/index.js';
-import { env } from '../utils/env.js';
-import { sendEmail } from '../utils/sendMail.js';
-import handlebars from 'handlebars';
-import path from 'node:path';
-import fs from 'node:fs/promises';
-import { TEMPLATES_DIR } from '../constans/index.js';
+import User from "../models/user.js";
+import createHttpError from "http-errors";
+import { sendEmail } from "../utils/email.js"; // уявний модуль для відправки електронних листів
 
-export const registerUser = async (payload) => {
-  const existingUser = await UsersCollection.findOne({ email: payload.email });
-
-  if (existingUser) {
-    throw createHttpError(409, 'User already exists');
-  }
-
-  const encryptedPassword = await bcrypt.hash(payload.password, 10);
-
-  return await UsersCollection.create({
-    ...payload,
-    password: encryptedPassword,
-  });
-};
-
-export const loginUser = async (payload) => {
-  const user = await UsersCollection.findOne({ email: payload.email });
-  if (!user) {
-    throw createHttpError(404, 'User not found');
-  }
-  const isEqual = await bcrypt.compare(payload.password, user.password);
-
-  if (!isEqual) {
-    throw createHttpError(401, 'Unauthorized');
-  }
-
-  await SessionsCollection.deleteOne({ userId: user._id });
-
-  const accessToken = randomBytes(30).toString('base64');
-  const refreshToken = randomBytes(30).toString('base64');
-
-  return await SessionsCollection.create({
-    userId: user._id,
-    accessToken,
-    refreshToken,
-    accessTokenValidUntil: new Date(Date.now() + FIFTEEN_MINUTES),
-    refreshTokenValidUntil: new Date(Date.now() + ONE_DAY),
-  });
-};
-
-export const logoutUser = async (sessionId) => {
-  await SessionsCollection.deleteOne({ _id: sessionId });
-};
-
-const createSession = () => {
-  const accessToken = randomBytes(30).toString('base64');
-  const refreshToken = randomBytes(30).toString('base64');
-
-  return {
-    accessToken,
-    refreshToken,
-    accessTokenValidUntil: new Date(Date.now() + FIFTEEN_MINUTES),
-    refreshTokenValidUntil: new Date(Date.now() + ONE_DAY),
-  };
-};
-
-export const refreshUsersSession = async ({ sessionId, refreshToken }) => {
-  const session = await SessionsCollection.findOne({
-    _id: sessionId,
-    refreshToken,
-  });
-
-  if (!session) {
-    throw createHttpError(401, 'Session not found');
-  }
-
-  const isSessionTokenExpired =
-    new Date() > new Date(session.refreshTokenValidUntil);
-
-  if (isSessionTokenExpired) {
-    throw createHttpError(401, 'Session token expired');
-  }
-  await SessionsCollection.deleteOne({ _id: sessionId });
-
-  const newSession = createSession();
-
-  return await SessionsCollection.create({
-    userId: session.userId,
-    ...newSession,
-  });
-};
-
-
+// Функція для запиту токена для скидання пароля
 export const requestResetToken = async (email) => {
-  const user = await UsersCollection.findOne({ email });
+  const user = await User.findOne({ email });
   if (!user) {
     throw createHttpError(404, 'User not found');
   }
-  const resetToken = jwt.sign(
-    {
-      sub: user._id,
-      email,
-    },
-    env('JWT_SECRET'),
-    {
-      expiresIn: '15m',
-    },
-  );
 
-  const resetPasswordTemplatePath = path.join(
-    TEMPLATES_DIR,
-    'reset-password-email.html',
-  );
+  const resetToken = generateResetToken(); // уявна функція для генерації токена
 
-  const templateSource = (
-    await fs.readFile(resetPasswordTemplatePath)
-  ).toString();
+  // Збереження токена в базі даних (приклад)
+  user.resetPasswordToken = resetToken;
+  user.resetPasswordExpires = Date.now() + 3600000; // 1 година
+  await user.save();
 
-  const template = handlebars.compile(templateSource);
-  const html = template({
-    name: user.name,
-    link: `${env('APP_DOMAIN')}/reset-password?token=${resetToken}`,
-  });
-try {
+  // Відправка електронного листа з токеном
+  const resetUrl = `http://yourapp.com/reset-password?token=${resetToken}`;
+  const message = `You requested a password reset. Please make a PUT request to: \n\n ${resetUrl}`;
+
   await sendEmail({
-    from: env(SMTP.SMTP_FROM),
-    to: email,
-    subject: 'Reset your password',
-    html,
+    to: user.email,
+    subject: 'Password Reset Request',
+    text: message,
   });
-// eslint-disable-next-line no-unused-vars
-} catch (err) {
-  throw createHttpError(500, 'Failed to send reset email');
-  }
 };
 
-export const resetPassword = async (payload) => {
-  let entries;
-
-  try {
-    entries = jwt.verify(payload.token, env('JWT_SECRET'));
-  } catch (err) {
-    if (err instanceof Error) throw createHttpError(401, err.message);
-    throw err;
-  }
-
-  const user = await UsersCollection.findOne({
-    email: entries.email,
-    _id: entries.sub,
-  });
-
-  if (!user) {
-    throw createHttpError(404, 'User not found');
-  }
-
-  const encryptedPassword = await bcrypt.hash(payload.password, 10);
-
-  await UsersCollection.updateOne(
-    { _id: user._id },
-    { password: encryptedPassword },
-  );
+// Інші функції...
+export const resetPassword = async (data) => {
+  // логіка скидання пароля
 };

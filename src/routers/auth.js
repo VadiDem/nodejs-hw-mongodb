@@ -8,9 +8,9 @@ import { loginUserController } from "../controllers/auth.js";
 import { logoutUserController } from "../controllers/auth.js";
 import { refreshUserSessionController } from "../controllers/auth.js";
 import { requestResetEmailSchema } from "../validation/auth.js";
-import { requestResetEmailController } from "../controllers/auth.js";
 import { resetPasswordSchema } from "../validation/auth.js";
 import { resetPasswordController } from "../controllers/auth.js";
+import { sendResetEmailController } from "../controllers/auth.js"; // Новий імпорт
 
 const router = Router();
 
@@ -22,8 +22,11 @@ router.post('/logout', ctrlWrapper(logoutUserController));
 
 router.post('/refresh', ctrlWrapper(refreshUserSessionController));
 
-router.post('/request-reset-email', validateBody(requestResetEmailSchema), ctrlWrapper(requestResetEmailController));
+// Оновлений маршрут для відправки електронного листа для скидання пароля
+router.post('/send-reset-email', validateBody(requestResetEmailSchema), ctrlWrapper(sendResetEmailController));
 
+// Маршрут для скидання пароля
 router.post('/reset-password', validateBody(resetPasswordSchema), ctrlWrapper(resetPasswordController));
 
 export default router;
+
