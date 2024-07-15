@@ -1,24 +1,21 @@
-import Joi from "joi";
+import Joi from 'joi';
 
-// Схема валідації для реєстрації користувача
 export const registerUserSchema = Joi.object({
+  name: Joi.string().min(3).max(30).required(),
   email: Joi.string().email().required(),
-  password: Joi.string().min(6).required(),
+  password: Joi.string().required(),
 });
 
-// Схема валідації для авторизації користувача
 export const loginUserSchema = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string().required(),
 });
 
-// Схема валідації для запиту електронного листа для скидання пароля
-export const requestResetEmailSchema = Joi.object({
+export const sendResetEmailSchema = Joi.object({
   email: Joi.string().email().required(),
 });
 
-// Схема валідації для скидання пароля
 export const resetPasswordSchema = Joi.object({
+  password: Joi.string().required(),
   token: Joi.string().required(),
-  newPassword: Joi.string().min(6).required(),
 });
