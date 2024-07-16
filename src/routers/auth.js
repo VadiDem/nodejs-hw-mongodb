@@ -1,76 +1,145 @@
-import { Router } from 'express';
-import { ctrlWrapper } from '../utils/ctrlWrapper.js';
-import { registerUserSchema } from '../validation/auth.js';
-import { registerUserController } from '../controllers/auth.js';
-import { validateBody } from '../middlewares/validateBody.js';
-<<<<<<< Updated upstream
-import { loginUserSchema } from '../validation/auth.js';
-import { loginUserController } from '../controllers/auth.js';
-import { logoutUserController } from '../controllers/auth.js';
-import { refreshUserSessionController } from '../controllers/auth.js';
-import { sendResetEmailSchema } from '../validation/auth.js';
-import { sendResetEmailController } from '../controllers/auth.js';
-import { resetPasswordSchema } from '../validation/auth.js';
-import { resetPasswordController } from '../controllers/auth.js';
+import {
+  getAllContacts,
+  getContactById,
+  createContact,
+  deleteContact,
+  updateContact,
+} from '../services/contacts.js';
+import { parsePaginationParams } from '../utils/parsePaginationParams.js';
+import createHttpError from 'http-errors';
+import { parseSortParams } from '../utils/parseSortParams.js';
+import { saveFileToUploadDir } from '../utils/saveFileToUploadDir.js';
+import { saveFileToCloudinary } from '../utils/saveFileToCloudinary.js';
+import { env } from '../utils/env.js';
 
-const router = Router();
+export const getAllContactsController = async (req, res) => {
+  const { page, perPage } = parsePaginationParams(req.query);
+  const { sortBy, sortOrder } = parseSortParams(req.query);
+  const userId = req.user._id; // Зміна: додано userId
 
-router.post(
-  '/register',
-  validateBody(registerUserSchema),
-  ctrlWrapper(registerUserController),
-);
+  const contacts = await getAllContacts({
+    page,
+    perPage,
+    sortBy,
+    sortOrder,
+    userId, // Зміна: передано userId
+  });
 
-export default router;
+  res.json({
+    status: 200,
+    message: 'Successfully found contacts!',
+    data: contacts,
+  });
+};
 
-router.post(
-  '/login',
-  validateBody(loginUserSchema),
-  ctrlWrapper(loginUserController),
-);
+export const getContactByIdController = async (req, res, next) => {
+  const { contactId } = req.params;
+  const userId = req.user._id; // Зміна: додано userId
 
-router.post(
-  '/refresh',
+  const contact = await getContactById(contactId, userId); // Зміна: передано userId
 
-  ctrlWrapper(refreshUserSessionController),
-);
+  if (!contact) {
+    next(createHttpError(404, 'Contact not found'));
+    return;
+  }
 
-router.post('/logout', ctrlWrapper(logoutUserController));
+  res.json({
+    status: 200,
+    message: `Successfully found contact with id ${contactId}!`,
+    data: contact,
+  });
+};
 
-router.post(
-  '/send-reset-email',
-  validateBody(sendResetEmailSchema),
-  ctrlWrapper(sendResetEmailController),
-);
+export const createContactController = async (req, res) => {
+  const userId = req.user._id; // Зміна: додано userId
+  const photo = req.file;
 
-router.post(
-  '/reset-pwd',
-  validateBody(resetPasswordSchema),
-  ctrlWrapper(resetPasswordController),
-);
-=======
-import { loginUserSchema } from "../validation/auth.js";
-import { loginUserController } from "../controllers/auth.js";
-import { logoutUserController } from "../controllers/auth.js";
-import { refreshUserSessionController } from "../controllers/auth.js";
-import { requestResetEmailSchema } from "../validation/auth.js";
-import { requestResetEmailController } from "../controllers/auth.js";
-import { resetPasswordSchema } from "../validation/auth.js";
-import { resetPasswordController } from "../controllers/auth.js";
+  let photoUrl;
 
-const router = Router();
+  if (photo) {
+    if (env('ENABLE_CLOUDINARY') === 'true') {
+      photoUrl = await saveFileToCloudinary(photo);
+    } else {
+      photoUrl = await saveFileToUploadDir(photo);
+    }
+  }
 
-router.post('/register', validateBody(registerUserSchema), ctrlWrapper(registerUserController));
+  const contact = await createContact({ ...req.body, photo: photoUrl }, userId); // Зміна: передано userId
 
-router.post('/login', validateBody(loginUserSchema), ctrlWrapper(loginUserController));
+  res.status(201).json({
+    status: 201,
+    message: `Successfully created a contact!`,
+    data: contact,
+  });
+};
 
-router.post('/logout', ctrlWrapper(logoutUserController));
+export const deleteContactController = async (req, res, next) => {
+  const { contactId } = req.params;
+  const userId = req.user._id; // Зміна: додано userId
 
-router.post('/refresh', ctrlWrapper(refreshUserSessionController));
+  const contact = await deleteContact(contactId, userId); // Зміна: передано userId
 
-router.post('/request-reset-email', validateBody(requestResetEmailSchema), ctrlWrapper(requestResetEmailController));
+  if (!contact) {
+    next(createHttpError(404, 'Contact not found'));
+    return;
+  }
 
-router.post('/reset-password', validateBody(resetPasswordSchema), ctrlWrapper(resetPasswordController));
+  res.status(204).send();
+};
 
-export default router;
->>>>>>> Stashed changes
+export const upsertContactController = async (req, res, next) => {
+  const { contactId } = req.params;
+  const userId = req.user._id; // Зміна: додано userId
+
+  const result = await updateContact(
+    contactId,
+    { ...req.body, userId }, // Зміна: додано userId
+    { upsert: true },
+  );
+
+  if (!result) {
+    next(createHttpError(404, 'Contact not found'));
+    return;
+  }
+
+  const status = result.isNew ? 201 : 200;
+
+  res.status(status).json({
+    status,
+    message: `Successfully upserted a contact!`,
+    data: result.contact,
+  });
+};
+
+export const patchContactController = async (req, res, next) => {
+  const { contactId } = req.params;
+  const userId = req.user._id; // Зміна: додано userId
+  const photo = req.file;
+
+  let photoUrl;
+
+  if (photo) {
+    if (env('ENABLE_CLOUDINARY') === 'true') {
+      photoUrl = await saveFileToCloudinary(photo);
+    } else {
+      photoUrl = await saveFileToUploadDir(photo);
+    }
+  }
+
+  const result = await updateContact(contactId, {
+    ...req.body,
+    photo: photoUrl,
+    userId, // Зміна: додано userId
+  });
+
+  if (!result) {
+    next(createHttpError(404, 'Contact not found'));
+    return;
+  }
+
+  res.json({
+    status: 200,
+    message: `Successfully patched a contact!`,
+    data: result.contact,
+  });
+};

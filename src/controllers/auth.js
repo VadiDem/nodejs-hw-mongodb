@@ -1,4 +1,3 @@
-<<<<<<< Updated upstream
 import { registerUser } from '../services/auth.js';
 import { loginUser } from '../services/auth.js';
 import { logoutUser } from '../services/auth.js';
@@ -6,19 +5,9 @@ import { THIRTY_DAYS } from '../constans/index.js';
 import { refreshUsersSession } from '../services/auth.js';
 import { sendResetToken } from '../services/auth.js';
 import { resetPassword } from '../services/auth.js';
-=======
-import { registerUser } from "../services/auth.js";
-import { loginUser } from "../services/auth.js";
-import { ONE_DAY } from "../constans/index.js";
-import { refreshUsersSession } from "../services/auth.js";
-import { logoutUser } from "../services/auth.js";
-import { requestResetToken } from "../services/auth.js";
-import { resetPassword } from "../services/auth.js";
->>>>>>> Stashed changes
 
 export const registerUserController = async (req, res) => {
   const user = await registerUser(req.body);
-
 
   res.json({
     status: 201,
@@ -87,13 +76,8 @@ export const refreshUserSessionController = async (req, res) => {
   });
 };
 
-<<<<<<< Updated upstream
 export const sendResetEmailController = async (req, res) => {
   await sendResetToken(req.body.email);
-=======
-export const requestResetEmailController = async (req, res) => {
-  await requestResetToken(req.body.email);
->>>>>>> Stashed changes
   res.json({
     message: 'Reset password email was successfully sent!',
     status: 200,
