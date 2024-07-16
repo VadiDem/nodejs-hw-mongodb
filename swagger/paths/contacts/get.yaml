@@ -1,8 +1,8 @@
 tags:
   - Contacts
 summary: Get list of contacts
-operationId: getContacts
-description: 'Get list of users with this endpoint'
+operationId: getAllContacts
+description: 'Get list of all contacts'
 security:
   - bearerAuth: []
 parameters:
@@ -20,8 +20,9 @@ parameters:
     name: sortBy
     schema:
       type: string
+      enum:
+        ['_id', 'name', 'phoneNumber', 'email', 'isFavourite', 'contactType']
       example: 'name'
-    description: "All student's fields can be mentioned. Default value - _id"
   - in: query
     name: sortOrder
     schema:
@@ -38,7 +39,7 @@ parameters:
     schema:
       type: string
       enum: ['work', 'home', 'personal']
-      example: personal
+      example: work
 responses:
   '200':
     description: Successfully found contacts!
@@ -71,7 +72,7 @@ responses:
                 data:
                   type: array
                   items:
-                    $ref: '../../components/schemas/contact.yaml'
+                    $ref: '../../components/schemas/contacts.yaml'
                 page:
                   type: number
                   example: 2

@@ -1,4 +1,4 @@
-import { OAuth2Client} from 'google-auth-library';
+import { OAuth2Client } from 'google-auth-library';
 import path from 'node:path';
 import { readFile } from 'fs/promises';
 import createHttpError from 'http-errors';
@@ -22,7 +22,7 @@ export const generateAuthUrl = () =>
     ],
   });
 
-  export const validateCode = async (code) => {
+export const validateCode = async (code) => {
   const response = await googleOAuthClient.getToken(code);
   if (!response.tokens.id_token) throw createHttpError(401, 'Unauthorized');
 

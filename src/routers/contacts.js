@@ -1,15 +1,19 @@
 import { Router } from 'express';
 import {
-    getContactsByIdController,
-    getContactsController,
-    createContactController,
-    deleteContactController,
-    updateContactController,
-    patchContactController
+  getAllContactsController,
+  getContactByIdController,
+  createContactController,
+  deleteContactController,
+  upsertContactController,
+  patchContactController,
 } from '../controllers/contacts.js';
 import { ctrlWrapper } from '../utils/ctrlWrapper.js';
 import { validateBody } from '../middlewares/validateBody.js';
-import { creaContactSchema, updateContactSchema } from '../validation/contacts.js';
+import {
+  createContactSchema,
+  updateContactSchema,
+} from '../validation/contacts.js';
+import { isValidId } from '../middlewares/isValidId.js';
 import { authenticate } from '../middlewares/authenticate.js';
 import { upload } from '../middlewares/multer.js';
 
@@ -17,16 +21,31 @@ const router = Router();
 
 router.use(authenticate);
 
-router.get('/', ctrlWrapper(getContactsController));
+router.get('/', ctrlWrapper(getAllContactsController));
 
-router.get('/:contactId', ctrlWrapper(getContactsByIdController));
+router.get(
+  '/:contactId',
+  isValidId('contactId'),
+  ctrlWrapper(getContactByIdController),
+);
 
-router.post('', upload.single('photo'), ctrlWrapper(createContactController));
+router.post(
+  '/',
+  validateBody(createContactSchema),
+  upload.single('photo'),
+  ctrlWrapper(createContactController),
+);
 
 router.delete('/:contactId', ctrlWrapper(deleteContactController));
 
-router.put('/:contactId',validateBody(creaContactSchema), ctrlWrapper(updateContactController));
+router.put('/:contactId', ctrlWrapper(upsertContactController));
 
-router.patch('/:contactId', upload.single('photo'), validateBody(updateContactSchema), ctrlWrapper(patchContactController));
+router.patch(
+  '/:contactId',
+  isValidId('contactId'),
+  validateBody(updateContactSchema),
+  upload.single('photo'),
+  ctrlWrapper(patchContactController),
+);
 
- export default router;
+export default router;

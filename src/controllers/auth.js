@@ -1,16 +1,15 @@
-import { registerUser } from "../services/auth.js";
-import { loginUser } from "../services/auth.js";
-import { ONE_DAY } from "../constans/index.js";
-import { refreshUsersSession } from "../services/auth.js";
-import { logoutUser } from "../services/auth.js";
-import { requestResetToken } from "../services/auth.js";
-import { resetPassword } from "../services/auth.js";
-import { generateAuthUrl } from "../utils/googleOAuth2.js";
-import { loginOrSignupWithGoogle } from "../services/auth.js";
+import { registerUser } from '../services/auth.js';
+import { loginUser } from '../services/auth.js';
+import { logoutUser } from '../services/auth.js';
+import { THIRTY_DAYS } from '../constans/index.js';
+import { refreshUsersSession } from '../services/auth.js';
+import { sendResetToken } from '../services/auth.js';
+import { resetPassword } from '../services/auth.js';
+import { generateAuthUrl } from '../utils/googleOAuth2.js';
+import { loginOrSignupWithGoogle } from '../services/auth.js';
 
 export const registerUserController = async (req, res) => {
   const user = await registerUser(req.body);
-
 
   res.json({
     status: 201,
@@ -24,11 +23,11 @@ export const loginUserController = async (req, res) => {
 
   res.cookie('refreshToken', session.refreshToken, {
     httpOnly: true,
-    expires: new Date(Date.now() + ONE_DAY),
+    expires: new Date(Date.now() + THIRTY_DAYS),
   });
   res.cookie('sessionId', session._id, {
     httpOnly: true,
-    expires: new Date(Date.now() + ONE_DAY),
+    expires: new Date(Date.now() + THIRTY_DAYS),
   });
 
   res.json({
@@ -54,11 +53,11 @@ export const logoutUserController = async (req, res) => {
 const setupSession = (res, session) => {
   res.cookie('refreshToken', session.refreshToken, {
     httpOnly: true,
-    expires: new Date(Date.now() + ONE_DAY),
+    expires: new Date(Date.now() + THIRTY_DAYS),
   });
   res.cookie('sessionId', session._id, {
     httpOnly: true,
-    expires: new Date(Date.now() + ONE_DAY),
+    expires: new Date(Date.now() + THIRTY_DAYS),
   });
 };
 
@@ -79,8 +78,8 @@ export const refreshUserSessionController = async (req, res) => {
   });
 };
 
-export const requestResetEmailController = async (req, res) => {
-  await requestResetToken(req.body.email);
+export const sendResetEmailController = async (req, res) => {
+  await sendResetToken(req.body.email);
   res.json({
     message: 'Reset password email was successfully sent!',
     status: 200,

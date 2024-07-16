@@ -2,7 +2,7 @@ tags:
   - Contacts
 summary: Create contact
 operationId: createContact
-description: 'Create a contact with payload'
+description: Create a new contact
 security:
   - bearerAuth: []
 requestBody:
@@ -13,55 +13,34 @@ requestBody:
         required:
           - name
           - phoneNumber
-          - email
-          - isFavourite
-          - contactType
-          - updatedAt
-          - createdAt
-          - userId
         properties:
           name:
             description: "Contact's name"
             type: string
-            example: 'John Doe'
+            example: 'Yulia Shevchenko'
           phoneNumber:
-            description: 'Phone number'
-            type: number
-            example: +380000000007
-          email:
-            description: 'Email address'
+            description: "Contact's phone number"
             type: string
-            format: email
-            example: 'john.doe@example.com'
+            example: '+380000000001'
+          email:
+            description: "Contact's email"
+            type: string
+            example: 'julia@example.com'
           isFavourite:
-            description: 'Contact favourite'
+            description: 'Whether is contact favourite'
             type: boolean
             example: true
-          createdAt:
-            description: 'When was created'
-            type: string
-            format: date-time
-            example: '2024-06-06T17:48:14.102Z'
-          updatedAt:
-            description: 'When was updated'
-            type: string
-            format: date-time
-            example: '2024-06-06T17:48:14.102Z'
           contactType:
             description: "Contact's type"
             type: string
-            enum:
-              - work
-              - home
-              - personal
-            example: 'work'
+            enum: ['work', 'home', 'personal']
           photo:
-            description: 'Link to photo'
+            description: "Link to contact's photo"
             type: string
             format: binary
 responses:
   '201':
-    description: Creates a contact
+    description: Created a contact
     content:
       application/json:
         schema:
@@ -76,9 +55,9 @@ responses:
               example: 201
             message:
               type: string
-              example: Successfully created contact!
+              example: Successfully created a contact!
             data:
               type: object
-              $ref: '../../components/schemas/contact.yaml'
+              $ref: '../../components/schemas/contacts.yaml'
   '401':
     $ref: '../../components/responses/401.yaml'
